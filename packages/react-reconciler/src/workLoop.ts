@@ -5,6 +5,7 @@ import { HostRoot } from './workTags';
 
 let workInProgress: FiberNode | null;
 function preparereFreshStack(root: FiberRootNode) {
+	// 创建待渲染的 workInProgress fiber
 	workInProgress = createWorkInProgress(root.current, {});
 }
 
@@ -13,6 +14,8 @@ export function scheduleUpdateOnFiber(fiber: FiberNode) {
 	const root = markUpdateFromFiberToRoot(fiber);
 	renderRoot(root);
 }
+
+// 找到 fiberRootNode
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
 	let node = fiber;
 	let parent = node.return;
@@ -26,28 +29,39 @@ function markUpdateFromFiberToRoot(fiber: FiberNode) {
 	}
 	return null;
 }
+
+// 从fiberRootNode 开始进行渲染
 function renderRoot(root: FiberRootNode) {
 	// 初始化
 	preparereFreshStack(root);
 	do {
 		try {
+			// 进入 递归过程
 			workLoop();
 			break;
 		} catch (e) {
-			console.warn('workLoop发生错误');
+			if (__DEV__) {
+				console.warn('workLoop发生错误');
+			}
 			workInProgress = null;
 		}
 	} while (true);
 }
 function workLoop() {
 	while (workInProgress !== null) {
+		// 进行递归渲染
 		performUnitOfWork(workInProgress);
 	}
 }
+
+// 进行递归渲染
 function performUnitOfWork(fiber: FiberNode) {
+	// 进入递阶段
 	const next = beginWork(fiber);
+
 	fiber.memoizedProps = fiber.pendingProps;
 	if (next === null) {
+		// 进入归阶段
 		completeUnitOfWork(fiber);
 	} else {
 		workInProgress = next;
