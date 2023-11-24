@@ -1,12 +1,32 @@
-import { FiberNode } from './fiber';
+import { createWorkInProgress, FiberNode, FiberRootNode } from './fiber';
 import { beginWork } from './beginWork';
 import { completeWork } from './completeWork';
+import { HostRoot } from './workTags';
 
 let workInProgress: FiberNode | null;
-function preparereFreshStack(fiber: FiberNode) {
-	workInProgress = fiber;
+function preparereFreshStack(root: FiberRootNode) {
+	workInProgress = createWorkInProgress(root.current, {});
 }
-function renderRoot(root: FiberNode) {
+
+export function scheduleUpdateOnFiber(fiber: FiberNode) {
+	// todo 调度功能
+	const root = markUpdateFromFiberToRoot(fiber);
+	renderRoot(root);
+}
+function markUpdateFromFiberToRoot(fiber: FiberNode) {
+	let node = fiber;
+	let parent = node.return;
+	while (parent !== null) {
+		node = parent;
+		parent = node.return;
+	}
+
+	if (node.tag === HostRoot) {
+		return node.stateNode;
+	}
+	return null;
+}
+function renderRoot(root: FiberRootNode) {
 	// 初始化
 	preparereFreshStack(root);
 	do {
