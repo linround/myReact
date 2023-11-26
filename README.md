@@ -21,27 +21,50 @@
 
 ## dependencies 与 peerDependencies 的区别
 ## Placement 过程简介
-- createRoot
+- createRoot  
 创建 fiberRootNode
 - render 开始渲染，传入要渲染的ReactElement
-- createUpdate
+- createUpdate  
 创建一个update,将其放入，rootFiber 的updateQueue中
-- scheduleUpdateOnFiber
-- markUpdateFromFiberToRoot
+- scheduleUpdateOnFiber  
+- markUpdateFromFiberToRoot  
 找到fiberRootNode
-- preparereFreshStack
+- preparereFreshStack  
 创建 根workInProgress
-- workLoop
+- workLoop  
 创建fiber树，并完成DOM树的生成
-- performUnitOfWork
+- performUnitOfWork  
 进入递归阶段 完成fiber树和DOM树的生成
-- beginWork
+- beginWork  
 从根节点开始，从updateQueue中拿到对应的ReactElement
-- reconcileChildren
+- reconcileChildren  
 将ReactElement 转换成 fiber
-- completeUnitOfWork
+- completeUnitOfWork  
 从最里面的叶子fiber开始，创建DOM。并将子DOM进行挂载在当前的真实DOM上。
-- commitRoot
+- commitRoot  
 从fiberRootNode 开始。
-- commitMutationEffects
+- commitMutationEffects  
 传入finishedWork,将被标记的fiber,进行对应的DOM操作
+
+# FunctionComponent 的实现
+需要考虑的问题
+- 如何支持FC
+- 如何组织hooks
+## 如何支持FC   
+FC基于：
+- beginWork
+- completeWork
+
+
+# 关于useState
+hook 脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下文的能力？
+比如：
+- hook如何知道在另一个hook的上下文环境
+- hook 怎么知道当前是mount还是update
+解决方啊：在不同上下文调用的hook不是同一个函数
+- hooks如何知道自身的数据保存在哪？
+可以记录当前正在render 的FC对应的fiberNode,在fiberNode 中保存数据；
+
+# 关于函数组件的初步理解
+函数组件的关键是形成ReactElement,在这个形成的过程中，设计了一套链表解构的hooks.
+同时实现了使用hooks方法来触发组建的更新。同时通过全局变量的方式来确定当前fiber和当前hooks指针。

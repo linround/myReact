@@ -7,7 +7,12 @@
 // 答案：利用completeWork 向上遍历的流程，将子 fiberNode 的flags 冒泡到 父fiberNode
 
 import { FiberNode } from './fiber';
-import { HostComponent, HostRoot, HostText } from './workTags';
+import {
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText
+} from './workTags';
 import {
 	appendInitialChild,
 	Container,
@@ -46,6 +51,10 @@ export const completeWork = (wip: FiberNode) => {
 			return null;
 		}
 		case HostRoot: {
+			bubbleProperties(wip);
+			return null;
+		}
+		case FunctionComponent: {
 			bubbleProperties(wip);
 			return null;
 		}
