@@ -29,8 +29,10 @@ export const beginWork = (wip: FiberNode) => {
 			if (__DEV__) {
 				console.warn('beginWork 未实现的类型');
 			}
+			break;
 		}
 	}
+	return null;
 };
 
 // 计算状态最新值

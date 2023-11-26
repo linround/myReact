@@ -1,4 +1,4 @@
-import { createFiber, createFiberFromElement, FiberNode } from './fiber';
+import { createFiberFromElement, FiberNode } from './fiber';
 import { ReactElementType } from 'shared/ReactTypes';
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
 import { HostText } from './workTags';
