@@ -70,3 +70,23 @@ hook 脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下�
 同时实现了使用hooks方法来触发组建的更新。同时通过全局变量的方式来确定当前fiber和当前hooks指针。
 
 # 实现测试环节
+# update 初探  
+对于beginWork
+- 处理 ChildDeletion 的情况
+- 处理节点移动的情况  
+
+对于completeWork  
+- 需要处理HostText 内容更新的情况
+- 需要处理HostComponent 属性变化的情况
+
+对于commitWork 
+- 对于childDeletion，需要遍历被删除的子树
+
+对于useState
+- 实现相对于 mountState的updateState
+
+## commitWork流程
+对于标记 ChildDeletion 子树；由于子树中：
+- 对于FC，需要处理 useEffect,unmount执行，解绑ref
+- 对于HostComponent ，需要解绑 ref
+- 对于子树 的 根HostComponent，需要移除DOM

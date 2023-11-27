@@ -22,6 +22,8 @@ export class FiberNode {
 	flags: Flags;
 	subTreeFlags: Flags;
 	updateQueue: unknown;
+
+	deletions: FiberNode[] | null; // 记录要删除的fiber
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		// 实例
 		this.tag = tag;
@@ -49,6 +51,7 @@ export class FiberNode {
 		// 副作用
 		this.flags = NoFlags;
 		this.subTreeFlags = NoFlags; // 子fiberNode 的flags 冒泡到 父 fiberNode
+		this.deletions = null;
 	}
 }
 
@@ -82,6 +85,7 @@ export const createWorkInProgress = (
 		wip.pendingProps = pendingProps;
 		wip.flags = NoFlags;
 		wip.subTreeFlags = NoFlags;
+		wip.deletions = null;
 	}
 
 	wip.type = current.type;

@@ -19,7 +19,11 @@ import {
 	createInstance,
 	createTextInstance
 } from 'hostConfig';
-import { NoFlags } from './fiberFlags';
+import { NoFlags, Update } from './fiberFlags';
+
+function markUpdate(fiber: FiberNode) {
+	fiber.flags |= Update;
+}
 
 export const completeWork = (wip: FiberNode) => {
 	// 递归的 归阶段
@@ -29,6 +33,7 @@ export const completeWork = (wip: FiberNode) => {
 		case HostComponent: {
 			if (current !== null && wip.stateNode) {
 				// update
+				// 可能发生属性变化  比如 className 的变化
 			} else {
 				// 1.构建DOM
 				const instance = createInstance(wip.type, newProps);
@@ -42,6 +47,12 @@ export const completeWork = (wip: FiberNode) => {
 		case HostText: {
 			if (current !== null && wip.stateNode) {
 				// update
+				const oldText = current.memoizedProps.content;
+				const nextText = newProps.content;
+				if (oldText !== nextText) {
+					// 将 fiber 添加 更新标记
+					markUpdate(wip);
+				}
 			} else {
 				// 1.构建DOM
 				const instance = createTextInstance(newProps.content);
