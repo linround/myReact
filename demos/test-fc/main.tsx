@@ -4,7 +4,7 @@ function App() {
 	const [num, setNum] = useState(100);
 	const [b] = useState(1111);
 	window.setNum = setNum;
-	return <div>{num + b}</div>;
+	return num === 3 ? <Child /> : <div>{num}</div>;
 }
 function Child() {
 	return <span>big-react</span>;
