@@ -6,8 +6,18 @@ import {
 	Placement,
 	Update
 } from './fiberFlags';
-import { FunctionComponent, HostComponent, HostRoot, HostText } from "./workTags";
-import { appendChildToContainer, commitUpdate, Container, removeChild } from "hostConfig";
+import {
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText
+} from './workTags';
+import {
+	appendChildToContainer,
+	commitUpdate,
+	Container,
+	removeChild
+} from 'hostConfig';
 
 let nextEffect: FiberNode | null = null;
 // 从根节点进行 commit
@@ -71,35 +81,34 @@ function commitDeletion(childToDelete: FiberNode) {
 	commitNestedComponent(childToDelete, (unmountFiber) => {
 		switch (unmountFiber.tag) {
 			case HostComponent:
-				if (rootHostNode === null) {]
-					rootHostNode = unmountFiber
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
 				}
 				// todo 解绑ref
 				return;
 			case HostText:
-				if (rootHostNode === null) {]
-					rootHostNode = unmountFiber
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
 				}
 				return;
 			case FunctionComponent:
 				//todo useEffect unmount
 				return;
 			default:
-				if(__DEV__){
-					console.warn('未处理的 unmount 类型',unmountFiber)
+				if (__DEV__) {
+					console.warn('未处理的 unmount 类型', unmountFiber);
 				}
 		}
 	});
 	// 移除 rootHostNode 的DOM
-	if(rootHostNode !==null){
-		const hostParent=  getHostParent(childToDelete)
-		if(hostParent!==null){
-			removeChild(rootHostNode,hostParent)
+	if (rootHostNode !== null) {
+		const hostParent = getHostParent(childToDelete);
+		if (hostParent !== null) {
+			removeChild(rootHostNode, hostParent);
 		}
 	}
-	childToDelete.return = null
-	childToDelete.child = null
-
+	childToDelete.return = null;
+	childToDelete.child = null;
 }
 function commitNestedComponent(
 	root: FiberNode,
