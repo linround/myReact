@@ -90,3 +90,17 @@ hook 脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下�
 - 对于FC，需要处理 useEffect,unmount执行，解绑ref
 - 对于HostComponent ，需要解绑 ref
 - 对于子树 的 根HostComponent，需要移除DOM
+
+## 实现事件系统
+- 模拟实现浏览器事件捕获、冒泡流程
+- 实现合成事件对象
+- 方便后续扩展
+### 实现ReactDOM 与 Reconciler 对接
+将事件保存在DOM中，通过创建以下两个对接时机
+- 创建DOM时
+- 更新属性时
+### 触发事件系统
+- 由于之前事件已经将props存储在了DOM中
+- 获取到绑定事件的元素。
+- 从该元素开始，向上收集 capture 和 bubble 事件
+- 按顺序 触发收集到的事件数组

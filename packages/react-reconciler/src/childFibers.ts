@@ -99,6 +99,17 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 		return fiber;
 	}
 
+	function reconcileChildrenArray(
+		returnFiber: FiberNode,
+		currentFirstChild: FiberNode | null,
+		newChild: any[]
+	) {
+		// 1.将current 保存在 map中
+		// 2.遍newChild，寻找是否可复用
+		// 3.标记移动还是插入
+		// 4.将map中剩下的标记为删除
+	}
+
 	return function reconcileChildFiber(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
@@ -121,8 +132,12 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 					break;
 				}
 			}
+			// todo 多节点的情况
+			if (Array.isArray(newChild)) {
+				return reconcileChildrenArray(returnFiber, currentFiber, newChild);
+			}
 		}
-		// todo 多节点的情况
+
 		// HostText
 		if (typeof newChild === 'string' || typeof newChild === 'number') {
 			return placeSingleChild(
