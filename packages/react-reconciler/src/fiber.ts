@@ -6,7 +6,7 @@ import { Container } from 'hostConfig';
 export class FiberNode {
 	type: any;
 	tag: WorkTag;
-	key: Key;
+	key: Key | null;
 	stateNode: any;
 	ref: Ref;
 
@@ -27,7 +27,7 @@ export class FiberNode {
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		// 实例
 		this.tag = tag;
-		this.key = key;
+		this.key = key || null;
 		// HostComponent div DOM
 		this.stateNode = null;
 		// FunctionComponent  ()=>{}
