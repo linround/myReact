@@ -81,6 +81,10 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 		return;
 	}
 
+	if (__DEV__) {
+		console.warn('render 阶段开始');
+	}
+
 	// 初始化
 	preparereFreshStack(root, lane);
 	do {
