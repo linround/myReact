@@ -10,22 +10,25 @@ import {
 	UpdateQueue
 } from './updateQueue';
 import { scheduleUpdateOnFiber } from './workLoop';
-import { requestUpdateLanes } from './fiberLanes';
+import { Lane, NoLane, requestUpdateLanes } from './fiberLanes';
 
 let currentlyRenderingFiber: FiberNode | null = null; // 指向当前 函数组件的fiber
 let workInProgressHook: Hook | null = null; // 执行 hook 链表中的当前hook
 let currentHook: Hook | null = null;
+let renderLane: Lane = NoLane;
+
 const { currentDispatcher } = internals; // 用于区分 update和mount的 currentDispatcher
 interface Hook {
 	memoizedState: any;
 	updateQueue: unknown;
 	next: Hook | null;
 }
-export function renderWithHooks(wip: FiberNode) {
+export function renderWithHooks(wip: FiberNode, lane: Lane) {
 	// 赋值操作
 	currentlyRenderingFiber = wip;
 	// 重置 存储的 hooks链表
 	wip.memoizedState = null;
+	renderLane = lane;
 
 	const current = wip.alternate;
 	if (current !== null) {
@@ -46,6 +49,7 @@ export function renderWithHooks(wip: FiberNode) {
 	currentlyRenderingFiber = null;
 	workInProgressHook = null;
 	currentHook = null;
+	renderLane = NoLane;
 	return children;
 }
 const HooksDispatcherOnMount: Dispatcher = {
@@ -63,7 +67,11 @@ function updateState<State>(): [State, Dispatch<State>] {
 	const queue = hook.updateQueue as UpdateQueue<State>;
 	const pending = queue.shared.pending;
 	if (pending !== null) {
-		const { memoizedState } = processUpdateQueue(hook.memoizedState, pending);
+		const { memoizedState } = processUpdateQueue(
+			hook.memoizedState,
+			pending,
+			renderLane
+		);
 		hook.memoizedState = memoizedState;
 	}
 
