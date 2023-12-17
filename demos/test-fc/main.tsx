@@ -5,9 +5,9 @@ function App() {
 	const [b, setB] = useState(600);
 	console.log('render===============');
 	const onClick = () => {
-		debugger;
-		setA('a');
-		setB('b');
+		setA((a) => a + 1);
+		setA((a) => a + 1);
+		setA((a) => a + 1);
 	};
 
 	return (

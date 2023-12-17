@@ -121,3 +121,23 @@ hook 脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下�
 
 ### lane 模型
 用于批处理更新调度。
+
+### 不同的effect
+- **useEffect**   
+依赖变化后的，当前的commit阶段完成后异步执行
+
+- **useLayoutEffect**    
+在当前commit阶段同步执行
+
+- **useInsertionEffect**    
+  在当前commit阶段同步执行，无法拿到dom的引用，主要是给css ，js库使用
+
+#### 实现 useEffect 需要的功能
+- 保存依赖
+- 需要能够保存 create 回调
+- 需要能够保存 destroy 回调
+- 需要能够区分是否触发 create 回调
+  - mount 时
+  - 以来变化时
+  
+#####  关于 scheduler 包的使用 

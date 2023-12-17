@@ -11,6 +11,7 @@ importers:
       '@rollup/plugin-replace': ^5.0.5
       '@types/react': ^18.2.37
       '@types/react-dom': ^18.2.15
+      '@types/scheduler': ^0.16.8
       '@typescript-eslint/eslint-plugin': ^5.62.0
       '@typescript-eslint/parser': ^5.62.0
       '@vitejs/plugin-react': ^4.2.0
@@ -27,10 +28,12 @@ importers:
       rollup: ^4.5.1
       rollup-plugin-generate-package-json: ^3.2.0
       rollup-plugin-typescript2: ^0.36.0
+      scheduler: ^0.23.0
       typescript: ~5.1.6
       vite: ^5.0.0
     dependencies:
       '@rollup/plugin-replace': 5.0.5_rollup@4.5.1
+      scheduler: 0.23.0
     devDependencies:
       '@commitlint/cli': 18.4.3_typescript@5.1.6
       '@commitlint/config-conventional': 18.4.3
@@ -38,6 +41,7 @@ importers:
       '@rollup/plugin-commonjs': 25.0.7_rollup@4.5.1
       '@types/react': 18.2.38
       '@types/react-dom': 18.2.17
+      '@types/scheduler': 0.16.8
       '@typescript-eslint/eslint-plugin': 5.62.0_d3788b29fd1818dc9032c11186c844b6
       '@typescript-eslint/parser': 5.62.0_eslint@8.1.0+typescript@5.1.6
       '@vitejs/plugin-react': 4.2.0_vite@5.0.2
@@ -3633,7 +3637,6 @@ packages:
 
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-    dev: true
 
   /js-yaml/3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
@@ -3826,6 +3829,13 @@ packages:
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: true
+
+  /loose-envify/1.4.0:
+    resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
+    hasBin: true
+    dependencies:
+      js-tokens: 4.0.0
+    dev: false
 
   /lru-cache/10.0.3:
     resolution: {integrity: sha512-B7gr+F6MkqB3uzINHXNctGieGsRTMwIBgxkp0yq/5BwcuDzD4A8wQpHQW6vDAm1uKSLQghmRdD9sKqf2vJ1cEg==}
@@ -4491,6 +4501,12 @@ packages:
     dependencies:
       xmlchars: 2.2.0
     dev: true
+
+  /scheduler/0.23.0:
+    resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
+    dependencies:
+      loose-envify: 1.4.0
+    dev: false
 
   /semver/5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
