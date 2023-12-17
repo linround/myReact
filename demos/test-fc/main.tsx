@@ -1,22 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 function App() {
-	const [a, setA] = useState(100);
-	const [b, setB] = useState(600);
-	console.log('render===============');
-	const onClick = () => {
-		setA((a) => a + 1);
-		setA((a) => a + 1);
-		setA((a) => a + 1);
-	};
+	const [num, updateNum] = useState(0);
+	useEffect(() => {
+		console.log('App mount');
+	}, []);
+
+	useEffect(() => {
+		console.log('num change create', num);
+		return () => {
+			console.log('num change destroy', num);
+		};
+	}, [num]);
 
 	return (
-		<ul onClick={onClick}>
-			a:{a};b:{b}
-		</ul>
+		<div onClick={() => updateNum(num + 1)}>
+			{num === 0 ? <Child /> : 'noop'}
+		</div>
 	);
 }
+
 function Child() {
-	return <span>big-react</span>;
+	useEffect(() => {
+		console.log('Child mount');
+		return () => console.log('Child unmount');
+	}, []);
+
+	return 'i am child';
 }
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
