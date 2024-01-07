@@ -92,7 +92,7 @@ function ensureRootIsScheduled(root: FiberRootNode) {
 			console.log('在微任务中调度，优先级：', updateLane);
 		}
 		// 将 该函数 放入 syncQueue
-		scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane));
+		scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root));
 		// 使用微任务 执行 syncQueue 中的函数
 		scheduleMicroTask(flushSyncCallback);
 	} else {
