@@ -2,6 +2,12 @@
 
 import { Props } from 'shared/ReactTypes';
 import { Container } from 'hostConfig';
+import {
+	unstable_ImmediatePriority,
+	unstable_NormalPriority,
+	unstable_runWithPriority,
+	unstable_UserBlockingPriority
+} from 'scheduler';
 
 export const elementPropsKey = '__props';
 // 合法的事件系统
@@ -75,7 +81,10 @@ function dispatchEvent(container: Container, eventType: string, e: Event) {
 function triggerEventFlow(paths: EventCallback[], se: SyntheticEvent) {
 	for (let i = 0; i < paths.length; i++) {
 		const callback = paths[i];
-		callback.call(null, se);
+
+		unstable_runWithPriority(eventTypeToSchedulerPriority(se.type), () => {
+			callback.call(null, se);
+		});
 		if (se.__stopPropagation) {
 			break;
 		}
@@ -122,4 +131,17 @@ function collectPaths(
 	}
 
 	return paths;
+}
+
+function eventTypeToSchedulerPriority(eventType: string) {
+	switch (eventType) {
+		case 'click':
+		case 'keydown':
+		case 'keyup':
+			return unstable_ImmediatePriority;
+		case 'scroll':
+			return unstable_UserBlockingPriority;
+		default:
+			return unstable_NormalPriority;
+	}
 }
