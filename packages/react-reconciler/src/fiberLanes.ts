@@ -37,6 +37,11 @@ export function getHighestPriorityLane(lanes: Lanes) {
 	return lanes & -lanes;
 }
 
+// 即两个 完全相同的 lane
+export function isSubsetOfLanes(set: Lanes, subset: Lane) {
+	return (set & subset) === subset;
+}
+
 export function markRootFinished(root: FiberRootNode, lane: Lane) {
 	root.pendingLanes &= ~lane;
 }
