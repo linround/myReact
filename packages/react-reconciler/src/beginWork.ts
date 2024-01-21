@@ -11,6 +11,7 @@ import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 import { Lane } from './fiberLanes';
+import { Ref } from './fiberFlags';
 
 // 标记解构变化相关的flags
 // Placement 插入 移动
@@ -66,11 +67,13 @@ function updateHostRoot(wip: FiberNode, renderLane: Lane) {
 }
 
 // 创建子 fiberNode
-function updateHostComponent(wip: FiberNode) {
-	const nextProp = wip.pendingProps;
+function updateHostComponent(workInProgress: FiberNode) {
+	const nextProp = workInProgress.pendingProps;
+	// @ts-ignore
 	const nextChildren = nextProp.children;
-	reconcileChildren(wip, nextChildren);
-	return wip.child;
+	markRef(workInProgress.alternate, workInProgress);
+	reconcileChildren(workInProgress, nextChildren);
+	return workInProgress.child;
 }
 
 // 进入A的beginWork
@@ -84,5 +87,15 @@ function reconcileChildren(wip: FiberNode, children?: ReactElementType) {
 	} else {
 		// mount
 		wip.child = mountChildFiber(wip, null, children);
+	}
+}
+
+function markRef(current: FiberNode | null, workInProgress: FiberNode) {
+	const ref = workInProgress.ref;
+	if (
+		(current === null && ref !== null) ||
+		(current !== null && current.ref != ref)
+	) {
+		workInProgress.flags |= Ref;
 	}
 }
