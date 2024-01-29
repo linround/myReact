@@ -8,6 +8,7 @@
 
 import { FiberNode } from './fiber';
 import {
+	ContextProvider,
 	FunctionComponent,
 	HostComponent,
 	HostRoot,
@@ -78,6 +79,10 @@ export const completeWork = (wip: FiberNode) => {
 			return null;
 		}
 		case FunctionComponent: {
+			bubbleProperties(wip);
+			return null;
+		}
+		case ContextProvider: {
 			bubbleProperties(wip);
 			return null;
 		}

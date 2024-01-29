@@ -1,6 +1,7 @@
 // 递归 的递阶段
 import { FiberNode } from './fiber';
 import {
+	ContextProvider,
 	FunctionComponent,
 	HostComponent,
 	HostRoot,
@@ -36,6 +37,9 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 		case FunctionComponent: {
 			return updateFunctionComponent(wip, renderLane);
 		}
+		case ContextProvider: {
+			return updateContextProvider(wip);
+		}
 		default: {
 			if (__DEV__) {
 				console.warn('beginWork 未实现的类型');
@@ -45,6 +49,18 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 	}
 	return null;
 };
+
+function updateContextProvider(wip: FiberNode) {
+	const providerType = wip.type;
+	const context = providerType._context;
+	const newProps = wip.pendingProps;
+
+	// todo
+
+	const nextChildren = newProps?.children;
+	reconcileChildren(wip, nextChildren);
+	return wip.child;
+}
 
 function updateFunctionComponent(wip: FiberNode, renderLane: Lane) {
 	const nextChildren = renderWithHooks(wip, renderLane);
