@@ -22,6 +22,7 @@ import {
 	Instance
 } from 'hostConfig';
 import { NoFlags, Ref, Update } from './fiberFlags';
+import { popProvider } from './fiberContext';
 
 function markUpdate(fiber: FiberNode) {
 	fiber.flags |= Update;
@@ -68,7 +69,7 @@ export const completeWork = (wip: FiberNode) => {
 				}
 			} else {
 				// 1.构建DOM
-				const instance = createTextInstance(newProps.content);
+				const instance = createTextInstance(newProps!.content);
 				wip.stateNode = instance;
 			}
 			bubbleProperties(wip);
@@ -83,6 +84,8 @@ export const completeWork = (wip: FiberNode) => {
 			return null;
 		}
 		case ContextProvider: {
+			const context = wip.type._context;
+			popProvider(context);
 			bubbleProperties(wip);
 			return null;
 		}

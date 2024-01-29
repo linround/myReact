@@ -1,10 +1,12 @@
 import { Action } from 'shared/ReactTypes';
+import { ReactContext } from 'shared/ReactSymbols';
 
 export interface Dispatcher {
 	useState: <T>(initialState: (() => T) | T) => [T, Dispatch<T>];
 	useEffect: (calback: () => void | void, deps: any[] | void) => void;
 	useTransition: () => [boolean, (callback: () => void) => void];
 	useRef: <T>(initialValue: T) => { current: T };
+	useContext: <T>(context: ReactContext<T>) => T;
 }
 export type Dispatch<State> = (action: Action<State>) => void;
 const currentDispatcher: { current: Dispatcher | null } = {

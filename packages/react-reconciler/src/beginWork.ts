@@ -13,6 +13,7 @@ import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 import { Lane } from './fiberLanes';
 import { Ref } from './fiberFlags';
+import { pushProvider } from './fiberContext';
 
 // 标记解构变化相关的flags
 // Placement 插入 移动
@@ -56,6 +57,7 @@ function updateContextProvider(wip: FiberNode) {
 	const newProps = wip.pendingProps;
 
 	// todo
+	pushProvider(context, newProps!.value);
 
 	const nextChildren = newProps?.children;
 	reconcileChildren(wip, nextChildren);
