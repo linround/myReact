@@ -1,18 +1,25 @@
 // 递归 的递阶段
-import { FiberNode } from './fiber';
+import {
+	createFiberFromFragment,
+	createFiberFromOffscreen,
+	FiberNode,
+	OffscreenProps
+} from './fiber';
 import {
 	ContextProvider,
 	FunctionComponent,
 	HostComponent,
 	HostRoot,
-	HostText
+	HostText,
+	OffscreenComponent,
+	SuspenseComponent
 } from './workTags';
 import { processUpdateQueue, UpdateQueue } from './updateQueue';
 import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 import { Lane } from './fiberLanes';
-import { Ref } from './fiberFlags';
+import { Placement, Ref } from './fiberFlags';
 import { pushProvider } from './fiberContext';
 
 // 标记解构变化相关的flags
@@ -41,6 +48,12 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 		case ContextProvider: {
 			return updateContextProvider(wip);
 		}
+		case SuspenseComponent: {
+			return updateSuspenseComponent(wip);
+		}
+		case OffscreenComponent: {
+			return updateOffscreenComponent(wip);
+		}
 		default: {
 			if (__DEV__) {
 				console.warn('beginWork 未实现的类型');
@@ -50,6 +63,66 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 	}
 	return null;
 };
+
+function updateSuspenseComponent(wip: FiberNode) {
+	const current = wip.alternate;
+	const nextProps = wip.pendingProps;
+
+	let showFallback = false;
+	const didSuspense = true;
+
+	if (didSuspense) {
+		showFallback = true;
+	}
+
+	const nextPrimaryChildren = nextProps?.children;
+	const nextFallbackChildren = nextProps!.fallback;
+
+	if (current === null) {
+		// mount
+		if (showFallback) {
+			// 挂起
+		} else {
+			// 正常
+		}
+	} else {
+		// update
+		if (showFallback) {
+			// 挂起
+		} else {
+			// 正常
+		}
+	}
+}
+
+// mount时挂起的状态
+function mountSuspenseFallbackChildren(
+	wip: FiberNode,
+	primaryChildren: any,
+	fallbackChildren: any
+) {
+	const primaryChildProps: OffscreenProps = {
+		mode: 'hidden',
+		children: primaryChildren
+	};
+	const primaryChildFragment = createFiberFromOffscreen(primaryChildProps);
+	const fallbackChildFragment = createFiberFromFragment(fallbackChildren, null);
+
+	fallbackChildFragment.flags |= Placement;
+
+	primaryChildFragment.return = wip;
+	fallbackChildFragment.return = wip;
+	primaryChildFragment.sibling = fallbackChildFragment;
+	wip.child = primaryChildFragment;
+
+	return fallbackChildFragment;
+}
+function updateOffscreenComponent(wip: FiberNode) {
+	const nextProps = wip.pendingProps;
+	const nextChildren = nextProps?.children;
+	reconcileChildren(wip, nextChildren);
+	return wip.child;
+}
 
 function updateContextProvider(wip: FiberNode) {
 	const providerType = wip.type;

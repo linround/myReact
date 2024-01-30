@@ -3,6 +3,7 @@ export const REACT_ELEMENT_TYPE = 0xeac7;
 export const REACT_FRAGMENT_TYPE = 0xeacb;
 export const REACT_CONTEXT_TYPE = 0xeacc;
 export const REACT_PROVIDER_TYPE = 0xeac2;
+export const REACT_SUSPENSE_TYPE = 0xeac3;
 
 export type ReactContext<T> = {
 	$$typeof: symbol | number;
