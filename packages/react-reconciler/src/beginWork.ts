@@ -2,6 +2,7 @@
 import {
 	createFiberFromFragment,
 	createFiberFromOffscreen,
+	createWorkInProgress,
 	FiberNode,
 	OffscreenProps
 } from './fiber';
@@ -19,7 +20,7 @@ import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 import { Lane } from './fiberLanes';
-import { Placement, Ref } from './fiberFlags';
+import { ChildDeletion, Placement, Ref } from './fiberFlags';
 import { pushProvider } from './fiberContext';
 
 // 标记解构变化相关的flags
@@ -82,17 +83,127 @@ function updateSuspenseComponent(wip: FiberNode) {
 		// mount
 		if (showFallback) {
 			// 挂起
+
+			return mountSuspenseFallbackChildren(
+				wip,
+				nextPrimaryChildren,
+				nextFallbackChildren
+			);
 		} else {
 			// 正常
+			return mountSuspensePrimaryChildren(
+				wip,
+				nextPrimaryChildren,
+				nextFallbackChildren
+			);
 		}
 	} else {
 		// update
 		if (showFallback) {
 			// 挂起
+			return updateSuspenseFallbackChildren(
+				wip,
+				nextPrimaryChildren,
+				nextFallbackChildren
+			);
 		} else {
 			// 正常
+			return updateSuspensePrimaryChildren(
+				wip,
+				nextPrimaryChildren,
+				nextFallbackChildren
+			);
 		}
 	}
+}
+
+function updateSuspensePrimaryChildren(
+	wip: FiberNode,
+	primaryChildren: any,
+	fallbackChildren: any
+) {
+	const current = wip.alternate as FiberNode;
+	const currentPrimaryChildFragment = current.child as FiberNode;
+	const currentFallbackChildFragment: FiberNode | null =
+		currentPrimaryChildFragment.sibling;
+
+	const primaryChildProps: OffscreenProps = {
+		mode: 'visible',
+		children: primaryChildren
+	};
+
+	const primaryChildFragment = createWorkInProgress(
+		currentPrimaryChildFragment,
+		primaryChildProps
+	);
+	primaryChildFragment.return = wip;
+	primaryChildFragment.sibling = null;
+	wip.child = primaryChildFragment;
+
+	if (currentFallbackChildFragment !== null) {
+		const deletions = wip.deletions;
+		if (deletions === null) {
+			wip.deletions = [currentFallbackChildFragment];
+			wip.flags |= ChildDeletion;
+		} else {
+			deletions.push(currentFallbackChildFragment);
+		}
+	}
+	return primaryChildFragment;
+}
+
+function updateSuspenseFallbackChildren(
+	wip: FiberNode,
+	primaryChildren: any,
+	fallbackChildren: any
+) {
+	const current = wip.alternate as FiberNode;
+	const currentPrimaryChildFragment = current.child as FiberNode;
+	const currentFallbackChildFragment: FiberNode | null =
+		currentPrimaryChildFragment.sibling;
+
+	const primaryChildProps: OffscreenProps = {
+		mode: 'hidden',
+		children: primaryChildren
+	};
+	const primaryChildFragment = createWorkInProgress(
+		currentPrimaryChildFragment,
+		primaryChildProps
+	);
+	let fallbackChildFragment;
+	if (currentFallbackChildFragment !== null) {
+		fallbackChildFragment = createWorkInProgress(
+			currentFallbackChildFragment,
+			fallbackChildren
+		);
+	} else {
+		fallbackChildFragment = createFiberFromFragment(fallbackChildren, null);
+
+		fallbackChildFragment.flags |= Placement;
+	}
+
+	fallbackChildFragment.return = wip;
+	primaryChildFragment.return = wip;
+	primaryChildFragment.sibling = fallbackChildFragment;
+	wip.child = primaryChildFragment;
+
+	return fallbackChildFragment;
+}
+
+function mountSuspensePrimaryChildren(
+	wip: FiberNode,
+	primaryChildren: any,
+	fallbackChildren: any
+) {
+	const primaryChildProps: OffscreenProps = {
+		mode: 'visible',
+		children: primaryChildren
+	};
+	const primaryChildFragment = createFiberFromOffscreen(primaryChildProps);
+	wip.child = primaryChildFragment!;
+	primaryChildFragment.return = wip;
+
+	return primaryChildFragment;
 }
 
 // mount时挂起的状态
