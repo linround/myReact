@@ -12,7 +12,9 @@ import {
 	FunctionComponent,
 	HostComponent,
 	HostRoot,
-	HostText
+	HostText,
+	OffscreenComponent,
+	SuspenseComponent
 } from './workTags';
 import {
 	appendInitialChild,
@@ -21,7 +23,7 @@ import {
 	createTextInstance,
 	Instance
 } from 'hostConfig';
-import { NoFlags, Ref, Update } from './fiberFlags';
+import { NoFlags, Ref, Update, Visibility } from './fiberFlags';
 import { popProvider } from './fiberContext';
 
 function markUpdate(fiber: FiberNode) {
@@ -61,8 +63,8 @@ export const completeWork = (wip: FiberNode) => {
 		case HostText: {
 			if (current !== null && wip.stateNode) {
 				// update
-				const oldText = current.memoizedProps.content;
-				const nextText = newProps.content;
+				const oldText = current.memoizedProps!.content;
+				const nextText = newProps!.content;
 				if (oldText !== nextText) {
 					// 将 fiber 添加 更新标记
 					markUpdate(wip);
@@ -83,9 +85,32 @@ export const completeWork = (wip: FiberNode) => {
 			bubbleProperties(wip);
 			return null;
 		}
+		case OffscreenComponent: {
+			bubbleProperties(wip);
+			return null;
+		}
 		case ContextProvider: {
 			const context = wip.type._context;
 			popProvider(context);
+			bubbleProperties(wip);
+			return null;
+		}
+		case SuspenseComponent: {
+			const offscreenFiber = wip.child as FiberNode;
+			const isHidden = offscreenFiber.pendingProps!.mode === 'hidden';
+			const currentOffscreenFiber = offscreenFiber.alternate;
+
+			if (currentOffscreenFiber !== null) {
+				const wasHidden = currentOffscreenFiber.pendingProps!.mode === 'hidden';
+				if (isHidden !== wasHidden) {
+					offscreenFiber.flags |= Visibility;
+					bubbleProperties(offscreenFiber);
+				}
+			} else if (isHidden) {
+				offscreenFiber.flags |= Visibility;
+				bubbleProperties(offscreenFiber);
+			}
+
 			bubbleProperties(wip);
 			return null;
 		}
