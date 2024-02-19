@@ -23,9 +23,13 @@ import {
 	appendChildToContainer,
 	commitUpdate,
 	Container,
+	hideInstance,
+	hideTextInstance,
 	insertChildToContainer,
 	Instance,
-	removeChild
+	removeChild,
+	unhideInstance,
+	unhideTextInstance
 } from 'hostConfig';
 import { Effect, FCUpdateQueue } from './fiberHooks';
 import { HookHasEffect } from './hookEffectTags';
@@ -106,7 +110,16 @@ const commitMutationEffectsOnFiber = (
 };
 
 function hideOrUnhideAllChildren(finishedWork: FiberNode, isHidden: boolean) {
-	findHostSubtreeRoot(finishedWork, (hostRoot) => {});
+	findHostSubtreeRoot(finishedWork, (hostRoot) => {
+		const instance = hostRoot.stateNode;
+		if (hostRoot.tag === HostComponent) {
+			isHidden ? hideInstance(instance) : unhideInstance(instance);
+		} else if (hostRoot.tag === HostText) {
+			isHidden
+				? hideTextInstance(instance)
+				: unhideTextInstance(instance, hostRoot.memoizedProps!.content);
+		}
+	});
 }
 function findHostSubtreeRoot(
 	finishedWork: FiberNode,
