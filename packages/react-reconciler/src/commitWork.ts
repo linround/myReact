@@ -169,7 +169,7 @@ function findHostSubtreeRoot(
 		if (hostSubtreeRoot === node) {
 			hostSubtreeRoot = null;
 		}
-		node.sibling?.return = node.return;
+		node.sibling.return = node.return;
 		node = node.sibling;
 	}
 }

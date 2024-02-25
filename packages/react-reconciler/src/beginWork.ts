@@ -20,8 +20,15 @@ import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
 import { Lane } from './fiberLanes';
-import { ChildDeletion, Placement, Ref } from './fiberFlags';
+import {
+	ChildDeletion,
+	DidCapture,
+	NoFlags,
+	Placement,
+	Ref
+} from './fiberFlags';
 import { pushProvider } from './fiberContext';
+import { pushSuspenseHandler } from './suspenseContext';
 
 // 标记解构变化相关的flags
 // Placement 插入 移动
@@ -70,14 +77,16 @@ function updateSuspenseComponent(wip: FiberNode) {
 	const nextProps = wip.pendingProps;
 
 	let showFallback = false;
-	const didSuspense = true;
+	const didSuspense = (wip.flags & DidCapture) !== NoFlags;
 
 	if (didSuspense) {
 		showFallback = true;
+		wip.flags &= ~DidCapture;
 	}
 
 	const nextPrimaryChildren = nextProps?.children;
 	const nextFallbackChildren = nextProps!.fallback;
+	pushSuspenseHandler(wip);
 
 	if (current === null) {
 		// mount

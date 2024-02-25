@@ -9,7 +9,7 @@ export const SuspenseException = new Error(
 	'这不是真实的错误，这是Suspense工作的一部分，如果捕获到这个错误，请将他继续抛出去'
 );
 let suspendedThenable: Thenable<any> | null = null;
-function getSuspendedThenable(): Thenable<any> {
+export function getSuspendedThenable(): Thenable<any> {
 	if (suspendedThenable === null) {
 		throw new Error('应该存在 suspendedThenable，这是一个bug');
 	}
