@@ -16,6 +16,7 @@ import { Lane, NoLane, requestUpdateLanes } from './fiberLanes';
 import { Flags, PassiveEffect } from './fiberFlags';
 import { HookHasEffect, Passive } from './hookEffectTags';
 import { REACT_CONTEXT_TYPE, ReactContext } from 'shared/ReactSymbols';
+import { trackUsedThenable } from './thenable';
 
 let currentlyRenderingFiber: FiberNode | null = null; // 指向当前 函数组件的fiber
 let workInProgressHook: Hook | null = null; // 执行 hook 链表中的当前hook
@@ -377,6 +378,7 @@ function use<T>(usable: Usable<T>): T {
 		if (typeof (usable as Thenable<T>).then === 'function') {
 			// thenable
 			const thenable = usable as Thenable<T>;
+			return trackUsedThenable(thenable);
 		} else if ((usable as ReactContext<T>).$$typeof === REACT_CONTEXT_TYPE) {
 			const context = usable as ReactContext<T>;
 			return readContext(context);

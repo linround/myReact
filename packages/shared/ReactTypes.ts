@@ -37,19 +37,20 @@ export interface ThenableImpl<T, Result, Err> {
 	): void | Wakeable<Result>;
 }
 
-interface UntrackedThenable<T, Result, Err>
+export interface UntrackedThenable<T, Result, Err>
 	extends ThenableImpl<T, Result, Err> {
 	status?: void;
 }
-interface PendingThenable<T, Result, Err> extends ThenableImpl<T, Result, Err> {
+export interface PendingThenable<T, Result, Err>
+	extends ThenableImpl<T, Result, Err> {
 	status: 'pending';
 }
-interface FulfilledThenable<T, Result, Err>
+export interface FulfilledThenable<T, Result, Err>
 	extends ThenableImpl<T, Result, Err> {
 	status: 'fulfilled';
 	value: T;
 }
-interface RejectedThenable<T, Result, Err>
+export interface RejectedThenable<T, Result, Err>
 	extends ThenableImpl<T, Result, Err> {
 	status: 'rejected';
 	reason: Err;

@@ -2,6 +2,7 @@ import { jsxDEV, isValidElement as isValidElementFn } from './src/jsx';
 import { Dispatcher, resolveDispatcher } from './src/currentDispatcher';
 import currentDispatcher from './src/currentDispatcher';
 import currentBatchConfig from './src/currentBatchConfig';
+import { Usable } from 'shared/ReactTypes';
 
 export { createContext } from './src/context';
 export const useState: Dispatcher['useState'] = (initialState) => {
@@ -20,6 +21,10 @@ export const useRef: Dispatcher['useRef'] = (initialValue) => {
 export const useContext: Dispatcher['useContext'] = (context) => {
 	const dispatcher = resolveDispatcher();
 	return dispatcher.useContext(context);
+};
+export const use: Dispatcher['use'] = <T>(usable: Usable<T>) => {
+	const dispatcher = resolveDispatcher();
+	return dispatcher.use(usable);
 };
 export const useTransition: Dispatcher['useTransition'] = () => {
 	const dispatcher = resolveDispatcher();
