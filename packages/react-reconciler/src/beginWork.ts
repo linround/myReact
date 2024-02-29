@@ -19,7 +19,7 @@ import { processUpdateQueue, UpdateQueue } from './updateQueue';
 import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
-import { Lane } from './fiberLanes';
+import { Lane, NoLane, NoLanes } from './fiberLanes';
 import {
 	ChildDeletion,
 	DidCapture,
@@ -36,6 +36,9 @@ import { pushSuspenseHandler } from './suspenseContext';
 
 // Update  与节点属性相关的更新
 export const beginWork = (wip: FiberNode, renderLane: Lane) => {
+	// todo bailout策略
+	wip.lanes = NoLanes;
+
 	//  比较，返回子fiberNode
 	switch (wip.tag) {
 		case HostRoot: {

@@ -83,7 +83,7 @@ function preparereFreshStack(root: FiberRootNode, lane: Lane) {
 
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	// todo 调度功能
-	const root = markUpdateFromFiberToRoot(fiber);
+	const root = markUpdateLaneFromFiberToRoot(fiber, lane);
 	markRootUpdate(root, lane);
 	ensureRootIsScheduled(root);
 
@@ -146,10 +146,16 @@ export function markRootUpdate(root: FiberRootNode, lane: Lane) {
 }
 
 // 找到 fiberRootNode
-function markUpdateFromFiberToRoot(fiber: FiberNode) {
+function markUpdateLaneFromFiberToRoot(fiber: FiberNode, lane: Lane) {
 	let node = fiber;
 	let parent = node.return;
 	while (parent !== null) {
+		parent.childLanes = mergeLane(parent.childLanes, lane);
+		const alternate = parent.alternate;
+		if (alternate !== null) {
+			alternate.childLanes = mergeLane(alternate.childLanes, lane);
+		}
+
 		node = parent;
 		parent = node.return;
 	}
