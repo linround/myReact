@@ -19,7 +19,7 @@ import { processUpdateQueue, UpdateQueue } from './updateQueue';
 import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFiber, reconcileChildFiber } from './childFibers';
 import { renderWithHooks } from './fiberHooks';
-import { Lane, NoLane, NoLanes } from './fiberLanes';
+import { includeSomeLanes, Lane, NoLane, NoLanes } from './fiberLanes';
 import {
 	ChildDeletion,
 	DidCapture,
@@ -34,9 +34,35 @@ import { pushSuspenseHandler } from './suspenseContext';
 // Placement 插入 移动
 // ChildDeletion 删除
 
+// 是否能命中 bailout
+let didReceiveUpdate = false;
+export function markWipReceiveUpdate() {
+	didReceiveUpdate = true;
+}
+
 // Update  与节点属性相关的更新
 export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 	// todo bailout策略
+	const current = wip.alternate;
+	if (current !== null) {
+		const oldProps = current.memoizedProps;
+		const newProps = wip.pendingProps;
+
+		if (oldProps !== newProps || current.type !== wip.type) {
+			didReceiveUpdate = true;
+		} else {
+			// state context
+			const hasScheduledStateOrContext = checkScheduledUpdateOrContext(
+				current,
+				renderLane
+			);
+			if (!hasScheduledStateOrContext) {
+				// 命中 bailout
+				didReceiveUpdate = false;
+			}
+		}
+	}
+
 	wip.lanes = NoLanes;
 
 	//  比较，返回子fiberNode
@@ -247,6 +273,32 @@ function updateOffscreenComponent(wip: FiberNode) {
 	return wip.child;
 }
 
+function bailoutOnAlreadyFinishedWork(wip: FiberNode, renderLane: Lane) {
+	if (!includeSomeLanes(wip.childLanes, renderLane)) {
+		if (__DEV__) {
+			console.warn('bailout 整棵子树', wip);
+		}
+		return null;
+	}
+
+	if (__DEV__) {
+		console.warn('bailout 一个fiber', wip);
+	}
+	return wip.child;
+}
+
+function checkScheduledUpdateOrContext(
+	current: FiberNode,
+	renderLane: Lane
+): boolean {
+	const updateLanes = current.lanes;
+
+	if (includeSomeLanes(updateLanes, renderLane)) {
+		return true;
+	} else {
+		return false;
+	}
+}
 function updateContextProvider(wip: FiberNode) {
 	const providerType = wip.type;
 	const context = providerType._context;
