@@ -12,11 +12,18 @@ import {
 	UpdateQueue
 } from './updateQueue';
 import { scheduleUpdateOnFiber } from './workLoop';
-import { Lane, mergeLane, NoLane, requestUpdateLanes } from './fiberLanes';
+import {
+	Lane,
+	mergeLane,
+	NoLane,
+	removeLanes,
+	requestUpdateLanes
+} from './fiberLanes';
 import { Flags, PassiveEffect } from './fiberFlags';
 import { HookHasEffect, Passive } from './hookEffectTags';
 import { REACT_CONTEXT_TYPE, ReactContext } from 'shared/ReactSymbols';
 import { trackUsedThenable } from './thenable';
+import { markWipReceiveUpdate } from './beginWork';
 
 let currentlyRenderingFiber: FiberNode | null = null; // 指向当前 函数组件的fiber
 let workInProgressHook: Hook | null = null; // 执行 hook 链表中的当前hook
@@ -226,6 +233,7 @@ function updateState<State>(): [State, Dispatch<State>] {
 		queue.shared.pending = null;
 	}
 	if (baseQueue !== null) {
+		const prevState = hook.memoizedState;
 		const {
 			memoizedState,
 			baseQueue: newBaseQueue,
@@ -236,6 +244,16 @@ function updateState<State>(): [State, Dispatch<State>] {
 			// NoLanes
 			fiber.lanes = mergeLane(fiber.lanes, skippedLane);
 		});
+
+		// NaN===NaN false
+		// object.is true
+
+		// +0===-0 true
+		// object.is false
+		if (!Object.is(prevState, memoizedState)) {
+			markWipReceiveUpdate();
+		}
+
 		hook.memoizedState = memoizedState;
 		hook.baseState = newBaseState;
 		hook.baseQueue = newBaseQueue;
@@ -398,4 +416,13 @@ export function resetHooksOnUnwind() {
 	currentlyRenderingFiber = null;
 	currentHook = null;
 	workInProgressHook = null;
+}
+
+export function bailoutHook(wip: FiberNode, renderLane: Lane) {
+	const current = wip.alternate as FiberNode;
+
+	wip.updateQueue = current.updateQueue;
+	wip.flags &= ~PassiveEffect;
+
+	current.lanes = removeLanes(current.lanes, renderLane);
 }
