@@ -4,6 +4,7 @@ import internals from 'shared/internals';
 import { Action, Thenable, Usable } from 'shared/ReactTypes';
 import { FiberNode } from './fiber';
 import {
+	basicStateReducer,
 	createUpdate,
 	createUpdateQueue,
 	enqueueUpdate,
@@ -16,6 +17,7 @@ import {
 	Lane,
 	mergeLane,
 	NoLane,
+	NoLanes,
 	removeLanes,
 	requestUpdateLanes
 } from './fiberLanes';
@@ -58,6 +60,7 @@ export interface Effect {
 }
 export interface FCUpdateQueue<State> extends UpdateQueue<State> {
 	lastEffect: Effect | null;
+	lastRenderedState: State;
 }
 
 type EffectCallback = () => void;
@@ -210,7 +213,7 @@ function updateState<State>(): [State, Dispatch<State>] {
 	const hook = updateWorkInProgresHook();
 
 	// 计算新state 的逻辑
-	const queue = hook.updateQueue as UpdateQueue<State>;
+	const queue = hook.updateQueue as FCUpdateQueue<State>;
 	const baseState = hook.baseState;
 
 	const pending = queue.shared.pending;
@@ -257,6 +260,7 @@ function updateState<State>(): [State, Dispatch<State>] {
 		hook.memoizedState = memoizedState;
 		hook.baseState = newBaseState;
 		hook.baseQueue = newBaseQueue;
+		queue.lastRenderedState = memoizedState;
 	}
 
 	return [hook.memoizedState, queue.dispatch as Dispatch<State>];
@@ -322,7 +326,7 @@ function mountState<State>(
 	} else {
 		memoizedState = initialState;
 	}
-	const queue = createUpdateQueue<State>();
+	const queue = createFCUpdateQueue<State>();
 	hook.updateQueue = queue;
 	hook.memoizedState = memoizedState;
 	hook.baseState = memoizedState;
@@ -330,6 +334,7 @@ function mountState<State>(
 	// @ts-ignore
 	const dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue);
 	queue.dispatch = dispatch;
+	queue.lastRenderedState = memoizedState;
 	return [memoizedState, dispatch];
 }
 
@@ -358,11 +363,34 @@ function startTransition(setPending: Dispatch<boolean>, callback: () => void) {
 }
 function dispatchSetState<State>(
 	fiber: FiberNode,
-	updateQueue: UpdateQueue<State>,
+	updateQueue: FCUpdateQueue<State>,
 	action: Action<State>
 ) {
 	const lane = requestUpdateLanes();
 	const update = createUpdate(action, lane);
+
+	// eager 策略
+	const current = fiber.alternate;
+	if (
+		fiber.lanes === NoLanes &&
+		(current === null || current.lanes === NoLanes)
+	) {
+		// 1.更新前的状态
+		// 2.计算状态的方法
+		const currentState = updateQueue.lastRenderedState;
+		const eagerState = basicStateReducer(currentState, action);
+		update.hasEagerState = true;
+		update.eagerState = eagerState;
+		if (Object.is(currentState, eagerState)) {
+			enqueueUpdate(updateQueue, update, fiber, NoLane);
+			// 命中eagerState
+			if (__DEV__) {
+				console.log('命中eagerState', fiber);
+			}
+			return;
+		}
+	}
+
 	enqueueUpdate(updateQueue, update, fiber, lane);
 	scheduleUpdateOnFiber(fiber, lane);
 }
