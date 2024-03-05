@@ -157,3 +157,7 @@ hook 脱离FC上下文，仅仅是普通函数，如何让他拥有感知上下�
 - RSC (React Server Component)
 
 ### offscreen 来实现 keep-alive组件
+
+
+## React.memo
+让 props全等比较变为 props 浅比较
