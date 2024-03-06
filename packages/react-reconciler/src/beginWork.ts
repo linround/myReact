@@ -12,6 +12,7 @@ import {
 	HostComponent,
 	HostRoot,
 	HostText,
+	MemoComponent,
 	OffscreenComponent,
 	SuspenseComponent
 } from './workTags';
@@ -23,7 +24,7 @@ import {
 	reconcileChildFiber
 } from './childFibers';
 import { bailoutHook, renderWithHooks } from './fiberHooks';
-import { includeSomeLanes, Lane, NoLane, NoLanes } from './fiberLanes';
+import { includeSomeLanes, Lane, NoLanes } from './fiberLanes';
 import {
 	ChildDeletion,
 	DidCapture,
@@ -33,6 +34,8 @@ import {
 } from './fiberFlags';
 import { pushProvider } from './fiberContext';
 import { pushSuspenseHandler } from './suspenseContext';
+import React from 'react';
+import { shallowEqual } from 'shared/shallowEquals';
 
 // 标记解构变化相关的flags
 // Placement 插入 移动
@@ -98,7 +101,7 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 			return null;
 		}
 		case FunctionComponent: {
-			return updateFunctionComponent(wip, renderLane);
+			return updateFunctionComponent(wip, wip.type, renderLane);
 		}
 		case ContextProvider: {
 			return updateContextProvider(wip);
@@ -108,6 +111,9 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 		}
 		case OffscreenComponent: {
 			return updateOffscreenComponent(wip);
+		}
+		case MemoComponent: {
+			return UpdateMemoComponent(wip, renderLane);
 		}
 		default: {
 			if (__DEV__) {
@@ -119,6 +125,29 @@ export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 	return null;
 };
 
+function UpdateMemoComponent(wip: FiberNode, renderLane: Lane) {
+	// bailout 四要素
+	// props 浅比较
+	const current = wip.alternate;
+	const nextProps = wip.pendingProps;
+	const Component = wip.type.type;
+	if (current !== null) {
+		const prevProps = current.memoizedProps;
+		// 钱比较 props
+		if (shallowEqual(prevProps, nextProps) && current.ref === wip.ref) {
+			didReceiveUpdate = false;
+			wip.pendingProps = prevProps;
+
+			// state context
+			if (!checkScheduledUpdateOrContext(current, renderLane)) {
+				// 满足四要素
+				wip.lanes = current.lanes;
+				return bailoutOnAlreadyFinishedWork(wip, renderLane);
+			}
+		}
+	}
+	return updateFunctionComponent(wip, Component, renderLane);
+}
 function updateSuspenseComponent(wip: FiberNode) {
 	const current = wip.alternate;
 	const nextProps = wip.pendingProps;
@@ -331,9 +360,13 @@ function updateContextProvider(wip: FiberNode) {
 	return wip.child;
 }
 
-function updateFunctionComponent(wip: FiberNode, renderLane: Lane) {
+function updateFunctionComponent(
+	wip: FiberNode,
+	Component: FiberNode['type'],
+	renderLane: Lane
+) {
 	// render
-	const nextChildren = renderWithHooks(wip, renderLane);
+	const nextChildren = renderWithHooks(wip, Component, renderLane);
 
 	const current = wip.alternate;
 	if (current !== null && !didReceiveUpdate) {

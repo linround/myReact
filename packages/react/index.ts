@@ -10,6 +10,8 @@ export const useState: Dispatcher['useState'] = (initialState) => {
 	return dispatcher.useState(initialState);
 };
 export { REACT_SUSPENSE_TYPE as Suspense } from 'shared/ReactSymbols';
+
+export { memo } from './src/memo';
 export const useEffect: Dispatcher['useEffect'] = (create, deps) => {
 	const dispatcher = resolveDispatcher();
 	return dispatcher.useEffect(create, deps);
