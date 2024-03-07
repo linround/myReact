@@ -28,6 +28,14 @@ export const use: Dispatcher['use'] = <T>(usable: Usable<T>) => {
 	const dispatcher = resolveDispatcher();
 	return dispatcher.use(usable);
 };
+export const useMemo: Dispatcher['useMemo'] = (nextCreate, deps) => {
+	const dispatcher = resolveDispatcher();
+	return dispatcher.useMemo(nextCreate, deps);
+};
+export const useCallback: Dispatcher['useCallback'] = (callback, deps) => {
+	const dispatcher = resolveDispatcher();
+	return dispatcher.useCallback(callback, deps);
+};
 export const useTransition: Dispatcher['useTransition'] = () => {
 	const dispatcher = resolveDispatcher();
 	return dispatcher.useTransition();

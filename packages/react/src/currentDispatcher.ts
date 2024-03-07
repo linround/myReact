@@ -1,13 +1,17 @@
 import { Action, Usable } from 'shared/ReactTypes';
 import { ReactContext } from 'shared/ReactSymbols';
+import { HookDeps } from 'react-reconciler/src/fiberHooks';
 
 export interface Dispatcher {
 	useState: <T>(initialState: (() => T) | T) => [T, Dispatch<T>];
-	useEffect: (calback: () => void | void, deps: any[] | void) => void;
+	useEffect: (calback: () => void | void, deps: HookDeps | void) => void;
 	useTransition: () => [boolean, (callback: () => void) => void];
 	useRef: <T>(initialValue: T) => { current: T };
 	useContext: <T>(context: ReactContext<T>) => T;
 	use: <T>(usable: Usable<T>) => T;
+
+	useMemo: <T>(nextCreate: () => T, deps: HookDeps | undefined) => T;
+	useCallback: <T>(callback: T, deps: HookDeps | undefined) => T;
 }
 export type Dispatch<State> = (action: Action<State>) => void;
 const currentDispatcher: { current: Dispatcher | null } = {
