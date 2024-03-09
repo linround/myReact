@@ -26,6 +26,7 @@ import { HookHasEffect, Passive } from './hookEffectTags';
 import { REACT_CONTEXT_TYPE, ReactContext } from 'shared/ReactSymbols';
 import { trackUsedThenable } from './thenable';
 import { markWipReceiveUpdate } from './beginWork';
+import { readContext as readContextOrigin } from './fiberContext';
 
 let currentlyRenderingFiber: FiberNode | null = null; // 指向当前 函数组件的fiber
 let workInProgressHook: Hook | null = null; // 执行 hook 链表中的当前hook
@@ -33,6 +34,11 @@ let currentHook: Hook | null = null;
 let renderLane: Lane = NoLane;
 
 const { currentDispatcher } = internals; // 用于区分 update和mount的 currentDispatcher
+
+function readContext<Value>(context: ReactContext<Value>): Value {
+	const consumer = currentlyRenderingFiber as FiberNode;
+	return readContextOrigin(consumer, context);
+}
 interface Hook {
 	memoizedState: any;
 	updateQueue: unknown;
@@ -425,14 +431,6 @@ function mountWorkInProgresHook(): Hook {
 	return workInProgressHook;
 }
 
-function readContext<T>(context: ReactContext<T>): T {
-	const consumer = currentlyRenderingFiber;
-	if (consumer === null) {
-		throw new Error('只能在函数组件中调用');
-	}
-	const value = context._currentValue;
-	return value;
-}
 function use<T>(usable: Usable<T>): T {
 	if (usable !== null && typeof usable === 'object') {
 		if (typeof (usable as Thenable<T>).then === 'function') {

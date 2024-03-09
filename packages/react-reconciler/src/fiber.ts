@@ -19,10 +19,17 @@ import {
 	REACT_PROVIDER_TYPE,
 	REACT_SUSPENSE_TYPE
 } from 'shared/ReactSymbols';
+import { Context } from 'react';
+import { ContextItem } from './fiberContext';
 
 export interface OffscreenProps {
 	mode: 'visible' | 'hidden';
 	children: any;
+}
+
+export interface FiberDependencies<Value> {
+	firstContext: ContextItem<Value> | null;
+	lanes: Lanes;
 }
 export class FiberNode {
 	type: any;
@@ -48,6 +55,8 @@ export class FiberNode {
 
 	lanes: Lanes;
 	childLanes: Lanes;
+
+	dependencies: FiberDependencies<any> | null;
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		// 实例
 		this.tag = tag;
@@ -79,6 +88,7 @@ export class FiberNode {
 
 		this.lanes = NoLanes;
 		this.childLanes = NoLanes;
+		this.dependencies = null;
 	}
 }
 
@@ -158,6 +168,15 @@ export const createWorkInProgress = (
 	// 与性能优化相关
 	wip.lanes = current.lanes;
 	wip.childLanes = current.childLanes;
+
+	const currentDeps = current.dependencies;
+	wip.dependencies =
+		currentDeps === null
+			? null
+			: {
+					lanes: currentDeps.lanes,
+					firstContext: currentDeps.firstContext
+			  };
 
 	return wip;
 };
